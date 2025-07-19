@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>萌萌梦华录冒险记</title>
+  <script src="../static/js/tailwindcss.js"></script>
+  <link href="../static/css/awesome.css" rel="stylesheet">
+   <!-- 内联Tailwind CSS -->
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#8B5A2B',
+            secondary: '#D2B48C',
+            accent: '#A52A2A',
+            light: '#F5F5DC',
+            dark: '#3A2718'
+          },
+          fontFamily: {
+            serif: ['"Noto Serif SC"', 'serif'],
+            sans: ['"Noto Sans SC"', 'sans-serif']
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .bg-blur {
+        backdrop-filter: blur(8px);
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+  </style>
+</head>
+<body class="bg-dark text-light min-h-screen font-serif">
+  <!-- 背景图 -->
+  <!-- <div class="fixed inset-0 z-0 opacity-20">
+    <img src="https://picsum.photos/id/29/1920/1080" alt="古代背景图" class="w-full h-full object-cover">
+  </div> -->
+
+  <div class="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+    <!-- 游戏标题 -->
+    <header class="text-center mb-8">
+      <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-primary mb-2 text-shadow">萌萌梦华录冒险记</h1>
+      <p class="text-secondary text-[clamp(1rem,2vw,1.2rem)]">命运的抉择，尽在指尖</p>
+    </header>
+
+    <!-- 游戏容器 -->
+    <div class="bg-dark/80 bg-blur rounded-xl shadow-2xl overflow-hidden border border-primary/30">
+      <!-- 游戏信息栏 -->
+      <div class="bg-primary/20 px-4 py-3 flex justify-between items-center border-b border-primary/30">
+        <div class="flex items-center gap-4">
+          <span class="text-secondary"><i class="fa fa-book mr-2"></i>章节: <span id="chapter">序章</span></span>
+          <span class="text-secondary"><i class="fa fa-heart mr-2"></i>心境: <span id="mood">平静</span></span>
+        </div>
+        <button id="save-btn" class="bg-primary/50 hover:bg-primary/80 text-light px-3 py-1 rounded transition-all duration-300 flex items-center">
+            <i class="fa fa-save mr-2"></i>保存
+        </button>
+      </div>
+
+      <!-- 游戏内容区 -->
+      <div class="flex flex-col md:flex-row">
+        <!-- 故事内容 -->
+        <div class="w-full md:w-2/3 p-6 border-r border-primary/30 overflow-y-auto max-h-[70vh] scrollbar-hide">
+          <div id="story-container" class="space-y-4">
+            <p id="story-text" class="text-light leading-relaxed text-[clamp(1rem,2vw,1.1rem)]">
+              你是萌啊萌，汴京茶坊的老板娘。今日清晨，你收到了欧阳旭的来信...
+            </p>
+          </div>
+        </div>
+
+        <!-- 选项区域 -->
+        <div class="w-full md:w-1/3 p-6 bg-dark/40">
+          <h3 class="text-xl font-semibold text-secondary mb-4 border-b border-primary/30 pb-2">抉择</h3>
+          <div id="choices-container" class="space-y-3">
+            <!-- 选项按钮将由JavaScript动态生成 -->
+          </div>
+
+          <!-- 存档列表 -->
+          <div id="save-list" class="mt-6 hidden">
+            <h3 class="text-xl font-semibold text-secondary mb-3">存档列表</h3>
+            <div id="save-items" class="space-y-2 max-h-40 overflow-y-auto scrollbar-hide"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 游戏控制区 -->
+      <div class="bg-primary/20 px-4 py-3 flex justify-between items-center border-t border-primary/30">
+        <button id="load-btn" class="bg-primary/50 hover:bg-primary/80 text-light px-3 py-1 rounded transition-all duration-300 flex items-center">
+          <i class="fa fa-folder-open mr-1"></i>读取存档
+        </button>
+        <button id="restart-btn" class="bg-accent/50 hover:bg-accent/80 text-light px-3 py-1 rounded transition-all duration-300 flex items-center">
+           <i class="fa fa-refresh mr-2"></i>重新开始
+        </button>
+      </div>
+    </div>
+
+    <!-- 结局弹窗 -->
+    <div id="ending-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 hidden">
+      <div class="bg-dark border-2 border-primary rounded-xl p-8 max-w-2xl w-full mx-4">
+        <h2 id="ending-title" class="text-2xl font-bold text-primary mb-4 text-center">结局：茶韵长存</h2>
+        <div id="ending-content" class="text-light mb-6 leading-relaxed">
+          <p>你凭借智慧与勇气经营着茶坊，最终成为汴京最有名的茶商。你的茶韵传遍大江南北，被后人传颂。</p>
+        </div>
+        <div class="text-center">
+          <button id="restart-from-ending" class="bg-primary hover:bg-primary/80 text-light px-6 py-2 rounded-lg transition-all duration-300">
+            重新开始
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 游戏数据
+    const gameData = {
+      currentScene: 'start',
+      playerState: {
+        mood: '平静',
+        reputation: 0,
+        wealth: 0,
+        relationships: {
+          ouyangXu: 0,
+          guQianfan: 0,
+          sunSanniang: 0
+        }
+      },
+      saveSlots: []
+    };
+
+    // 场景数据
+    const scenes = {
+      start: {
+        text: "你是萌啊萌，汴京茶坊的老板娘。今日清晨，你收到了欧阳旭的来信...",
+        choices: [
+          { text: "拆阅信件", nextScene: "readLetter" },
+          { text: "先处理茶坊事务", nextScene: "teaHouseBusiness" }
+        ]
+      },
+      readLetter: {
+        text: "信中，欧阳旭称自己已高中探花，不日将迎娶高官之女。他希望你能忘记过去，各自安好。你感到一阵眩晕，手中的信纸也随之飘落...",
+        choices: [
+          { text: "收拾心情，继续经营茶坊", nextScene: "continueBusiness" },
+          { text: "前往京城质问欧阳旭", nextScene: "goToCapital" },
+          { text: "借酒消愁", nextScene: "drinkAlcohol" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '愤怒';
+          updateMood();
+        }
+      },
+      teaHouseBusiness: {
+        text: "你决定先处理茶坊事务，暂时将信件放在一旁。忙碌的早晨过去了，当你再次拿起那封信时，发现墨迹似乎有些异样...",
+        choices: [
+          { text: "仔细观察信件", nextScene: "examineLetter" },
+          { text: "继续忽略，专注经营", nextScene: "focusBusiness" }
+        ]
+      },
+      continueBusiness: {
+        text: "你深吸一口气，将信件收好。茶坊的生意需要你，生活还要继续。在你的精心经营下，茶坊的名声越来越大，吸引了许多文人墨客的光顾。",
+        choices: [
+          { text: "与文人交流，提升茶坊格调", nextScene: "communicateWithScholars" },
+          { text: "研发新茶，吸引更多顾客", nextScene: "developNewTea" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '坚定';
+          gameData.playerState.reputation += 10;
+          updateMood();
+        }
+      },
+      goToCapital: {
+        text: "你毅然决然地踏上了前往京城的路途。经过几日的奔波，终于找到了欧阳旭的住所。然而，当你见到他时，却发现他身边已有一位美丽端庄的女子...",
+        choices: [
+          { text: "质问欧阳旭为何负心", nextScene: "confrontOuyang" },
+          { text: "默默离开，不再纠缠", nextScene: "leaveSilently" },
+          { text: "寻求他人帮助，揭露真相", nextScene: "seekHelp" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '愤怒';
+          gameData.playerState.wealth -= 20;
+          updateMood();
+        }
+      },
+      drinkAlcohol: {
+        text: "你让孙三娘照顾茶坊，自己则来到后堂借酒消愁。几杯下肚，你感到一阵眩晕，往事如潮水般涌来。恍惚间，你仿佛又回到了与欧阳旭初遇的那一天...",
+        choices: [
+          { text: "振作起来，不能一蹶不振", nextScene: "cheerUp" },
+          { text: "继续喝酒，麻醉自己", nextScene: "continueDrinking" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '悲伤';
+          updateMood();
+        }
+      },
+      // 新增和修复场景定义
+      examineLetter: {
+        text: "你仔细观察信件，发现墨迹有些异样。经过一番研究，你发现这封信似乎被人篡改过...",
+        choices: [
+          { text: "寻找证据证明信件被篡改", nextScene: "findEvidence" },
+          { text: "暂时隐瞒此事，继续观察", nextScene: "observeSilently" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '疑惑';
+          updateMood();
+        }
+      },
+      focusBusiness: {
+        text: "你决定暂时忽略信件，专注于茶坊的经营。在你的努力下，茶坊的生意越来越好，吸引了不少达官贵人的光顾...",
+        choices: [
+          { text: "结识贵人，拓展人脉", nextScene: "makeConnections" },
+          { text: "保持低调，专注制茶", nextScene: "focusOnTea" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '专注';
+          gameData.playerState.wealth += 15;
+          updateMood();
+        }
+      },
+      cheerUp: {
+        text: "你振作起来，决定不再被过去的感情所困扰。你重新投入到茶坊的经营中，并开始研发新的茶品...",
+        choices: [
+          { text: "研发新茶，打造茶坊特色", nextScene: "developNewTea" },
+          { text: "拓展茶坊业务，开设分店", nextScene: "expandBusiness" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '振奋';
+          updateMood();
+        }
+      },
+      continueDrinking: {
+        text: "你继续借酒消愁，茶坊的事务也因此受到影响。孙三娘多次劝你，你却始终无法释怀...",
+        choices: [
+          { text: "听从孙三娘劝告，振作起来", nextScene: "cheerUp" },
+          { text: "坚持自我，继续消沉", nextScene: "decline" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '颓废';
+          gameData.playerState.reputation -= 10;
+          updateMood();
+        }
+      },
+      // 新增中间场景
+      communicateWithScholars: {
+        text: "你与文人墨客交流，提升了茶坊的文化底蕴。茶坊的名声越来越大，甚至传到了皇宫中...",
+        choices: [
+          { text: "接受皇宫邀请，进宫献茶", nextScene: "palaceInvitation" },
+          { text: "保持低调，继续经营茶坊", nextScene: "continueBusiness" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '自信';
+          gameData.playerState.reputation += 20;
+          updateMood();
+        }
+      },
+      developNewTea: {
+        text: "你潜心研发新茶，经过多次试验，终于成功研制出一种香气独特的新茶。这种茶很快在汴京引起了轰动...",
+        choices: [
+          { text: "将新茶推广到全国各地", nextScene: "expandMarket" },
+          { text: "保持独家经营，维护品质", nextScene: "maintainQuality" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '自豪';
+          gameData.playerState.wealth += 30;
+          updateMood();
+        }
+      },
+      confrontOuyang: {
+        text: "你质问欧阳旭为何负心，他却避而不谈。就在这时，一位神秘的官员出现，替你解了围...",
+        choices: [
+          { text: "感谢神秘官员，询问身份", nextScene: "mysteriousOfficial" },
+          { text: "不理会官员，继续质问欧阳旭", nextScene: "continueConfrontation" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '愤怒';
+          updateMood();
+        }
+      },
+      leaveSilently: {
+        text: "你默默离开，不再纠缠。回到汴京后，你将全部精力投入到茶坊经营中，决心忘掉这段痛苦的回忆...",
+        choices: [
+          { text: "研发新茶，重振茶坊", nextScene: "developNewTea" },
+          { text: "拓展人脉，提升茶坊地位", nextScene: "expandNetwork" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '悲伤';
+          gameData.playerState.wealth -= 10;
+          updateMood();
+        }
+      },
+      seekHelp: {
+        text: "你决定寻求他人帮助，揭露欧阳旭的虚伪面目。在寻找证据的过程中，你结识了一位名叫顾千帆的捕快...",
+        choices: [
+          { text: "与顾千帆合作，调查真相", nextScene: "cooperateWithGu" },
+          { text: "谨慎行事，自己暗中调查", nextScene: "investigateAlone" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '坚定';
+          updateMood();
+        }
+      },
+      // 新增缺失场景
+      findEvidence: {
+        text: "你开始四处寻找证据，证明欧阳旭的信件被篡改。在一位老仆人的帮助下，你找到了关键证据——一封真正的欧阳旭的亲笔信...",
+        choices: [
+          { text: "将证据公之于众，揭露欧阳旭的虚伪", nextScene: "exposeOuyang" },
+          { text: "暂时保留证据，等待时机", nextScene: "waitForChance" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '决心';
+          gameData.playerState.reputation += 5;
+          updateMood();
+        }
+      },
+      observeSilently: {
+        text: "你决定暂时隐瞒此事，继续观察欧阳旭的动向。你暗中派人监视他的行踪，希望能找到更多的线索...",
+        choices: [
+          { text: "继续收集证据，等待时机成熟", nextScene: "collectEvidence" },
+          { text: "与欧阳旭保持表面关系，暗中谋划", nextScene: "pretendNormal" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '隐忍';
+          updateMood();
+        }
+      },
+      makeConnections: {
+        text: "你结识了许多达官贵人，拓展了自己的人脉。在一次宴会上，你遇到了一位来自皇宫的公公，他对你的茶赞不绝口...",
+        choices: [
+          { text: "向公公表达进宫献茶的意愿", nextScene: "palaceInvitation" },
+          { text: "保持低调，继续经营茶坊", nextScene: "continueBusiness" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '期待';
+          gameData.playerState.reputation += 15;
+          updateMood();
+        }
+      },
+      focusOnTea: {
+        text: "你决定保持低调，专注于制茶技艺的提升。在你的努力下，茶坊的茶品越来越精良，吸引了许多茶客的青睐...",
+        choices: [
+          { text: "研发新茶，打造茶坊特色", nextScene: "developNewTea" },
+          { text: "参加茶会，提升茶坊知名度", nextScene: "teaCompetition" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '专注';
+          gameData.playerState.wealth += 10;
+          updateMood();
+        }
+      },
+      expandBusiness: {
+        text: "你决定拓展茶坊业务，开设分店。在孙三娘和顾千帆的帮助下，你的分店很快在汴京各处开业，生意十分火爆...",
+        choices: [
+          { text: "将生意拓展到全国各地", nextScene: "nationalExpansion" },
+          { text: "保持现状，确保服务质量", nextScene: "maintainQuality" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '振奋';
+          gameData.playerState.wealth += 40;
+          gameData.playerState.reputation += 15;
+          updateMood();
+        }
+      },
+      maintainQuality: {
+        text: "你决定保持独家经营，维护茶坊的品质。你严格把控每一道工序，确保每一位顾客都能品尝到最优质的茶...",
+        choices: [
+          { text: "研发新茶，不断创新", nextScene: "developNewTea" },
+          { text: "培养学徒，传承茶艺", nextScene: "teachApprentices" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '严谨';
+          gameData.playerState.reputation += 25;
+          updateMood();
+        }
+      },
+      mysteriousOfficial: {
+        text: "你感谢神秘官员的帮助，并询问他的身份。原来他就是皇城司指挥使顾千帆。顾千帆表示愿意帮助你揭露欧阳旭的恶行...",
+        choices: [
+          { text: "接受顾千帆的帮助，共同调查", nextScene: "cooperateWithGu" },
+          { text: "婉拒顾千帆的帮助，自己解决", nextScene: "solveAlone" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '感激';
+          gameData.playerState.relationships.guQianfan += 15;
+          updateMood();
+        }
+      },
+      continueConfrontation: {
+        text: "你不理会官员，继续质问欧阳旭。欧阳旭却恼羞成怒，当众羞辱你。你感到无比屈辱，但也更加坚定了揭露他的决心...",
+        choices: [
+          { text: "收集证据，揭露欧阳旭的虚伪", nextScene: "findEvidence" },
+          { text: "暂时隐忍，等待时机", nextScene: "observeSilently" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '屈辱';
+          gameData.playerState.reputation -= 5;
+          updateMood();
+        }
+      },
+      expandNetwork: {
+        text: "你决定拓展人脉，提升茶坊的地位。你结交了许多文人雅士和富商巨贾，茶坊的名声也越来越大...",
+        choices: [
+          { text: "与达官贵人交往，扩大影响力", nextScene: "makeConnections" },
+          { text: "专注于茶坊经营，保持初心", nextScene: "continueBusiness" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '积极';
+          gameData.playerState.reputation += 10;
+          updateMood();
+        }
+      },
+      investigateAlone: {
+        text: "你决定谨慎行事，自己暗中调查。你四处打听消息，终于找到了一位关键证人...",
+        choices: [
+          { text: "与证人合作，揭露欧阳旭的罪行", nextScene: "exposeOuyang" },
+          { text: "暂时隐瞒证据，等待时机", nextScene: "waitForChance" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '谨慎';
+          gameData.playerState.wealth -= 5;
+          updateMood();
+        }
+      },
+      // 连接到结局的中间场景
+      exposeOuyang: {
+        text: "你将证据公之于众，揭露了欧阳旭的虚伪面目。欧阳旭身败名裂，受到了应有的惩罚。你也因此名声大噪...",
+        choices: [
+          { text: "回到汴京，继续经营茶坊", nextScene: "ending2" },
+          { text: "借助名声，将茶坊业务拓展全国", nextScene: "ending1" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '畅快';
+          gameData.playerState.reputation += 30;
+          gameData.playerState.relationships.ouyangXu = -100;
+          updateMood();
+        }
+      },
+      waitForChance: {
+        text: "你暂时保留证据，等待时机。不久后，欧阳旭因贪污受贿被朝廷调查。你趁机将证据交给了调查官员...",
+        choices: [
+          { text: "继续经营茶坊，低调生活", nextScene: "ending2" },
+          { text: "借助此事提升茶坊知名度", nextScene: "ending1" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '沉稳';
+          gameData.playerState.reputation += 15;
+          updateMood();
+        }
+      },
+      collectEvidence: {
+        text: "你继续收集证据，等待时机成熟。在顾千帆的帮助下，你终于找到了足够的证据，揭露了欧阳旭的罪行...",
+        choices: [
+          { text: "与顾千帆合作，彻底击垮欧阳旭", nextScene: "cooperateWithGu" },
+          { text: "将证据交给朝廷，让法律制裁他", nextScene: "legalPunishment" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '坚定';
+          gameData.playerState.reputation += 10;
+          updateMood();
+        }
+      },
+      pretendNormal: {
+        text: "你与欧阳旭保持表面关系，暗中谋划。你利用欧阳旭的信任，获取了更多的证据...",
+        choices: [
+          { text: "时机成熟，揭露欧阳旭的罪行", nextScene: "exposeOuyang" },
+          { text: "继续隐忍，等待更好的机会", nextScene: "waitForChance" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '隐忍';
+          updateMood();
+        }
+      },
+      teaCompetition: {
+        text: "你参加了一场大型茶会，展示了你的茶艺和茶品。你的精彩表现赢得了众人的赞赏，茶坊的知名度也大大提升...",
+        choices: [
+          { text: "接受皇宫邀请，进宫献茶", nextScene: "palaceInvitation" },
+          { text: "继续经营茶坊，保持初心", nextScene: "continueBusiness" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '自豪';
+          gameData.playerState.reputation += 20;
+          updateMood();
+        }
+      },
+      nationalExpansion: {
+        text: "你将生意拓展到全国各地，茶坊的分店遍布大江南北。你的茶韵传遍全国，成为了一代茶商传奇...",
+        isEnding: true,
+        title: "结局：茶韵传奇"
+      },
+      teachApprentices: {
+        text: "你培养了许多优秀的学徒，将你的茶艺和经营理念传承下去。你的茶坊成为了汴京的文化象征，你的名字被后人铭记...",
+        isEnding: true,
+        title: "结局：茶艺传承"
+      },
+      solveAlone: {
+        text: "你婉拒了顾千帆的帮助，决定自己解决问题。经过一番努力，你终于找到了证据，揭露了欧阳旭的罪行...",
+        choices: [
+          { text: "回到汴京，继续经营茶坊", nextScene: "ending2" },
+          { text: "远离尘世，隐居山林", nextScene: "ending3" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '独立';
+          gameData.playerState.reputation += 10;
+          updateMood();
+        }
+      },
+      legalPunishment: {
+        text: "你将证据交给朝廷，让法律制裁欧阳旭。欧阳旭受到了应有的惩罚，你也因此受到了朝廷的嘉奖...",
+        choices: [
+          { text: "接受朝廷任命，推广茶文化", nextScene: "ending4" },
+          { text: "回到汴京，继续经营茶坊", nextScene: "ending2" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '欣慰';
+          gameData.playerState.reputation += 25;
+          updateMood();
+        }
+      },
+      // 结局场景
+      ending1: {
+        text: "你凭借智慧与勇气经营着茶坊，最终成为汴京最有名的茶商。你的茶韵传遍大江南北，被后人传颂。",
+        isEnding: true,
+        title: "结局：茶韵长存"
+      },
+      ending2: {
+        text: "你揭露了欧阳旭的虚伪面目，但自己也身心俱疲。回到汴京后，你将全部精力投入到茶坊经营中，与志同道合的朋友相伴，度过了平静而充实的一生。",
+        isEnding: true,
+        title: "结局：平淡是真"
+      },
+      ending3: {
+        text: "你与欧阳旭彻底决裂，伤心欲绝。在孤独与痛苦中，你关闭了茶坊，远离尘世，从此隐居山林，唯有茶香相伴。",
+        isEnding: true,
+        title: "结局：茶隐山林"
+      },
+      ending4: {
+        text: "你与顾千帆合作，不仅揭露了欧阳旭的恶行，还帮助朝廷破获了一起重大案件。你被皇帝封为'茶圣'，茶坊的生意遍布天下。",
+        isEnding: true,
+        title: "结局：茶圣传奇"
+      },
+      ending5: {
+        text: "你过度沉迷于研发新茶，忽略了茶坊的经营和朋友的感受。最终，茶坊倒闭，你也失去了所有的朋友，孤独终老。",
+        isEnding: true,
+        title: "结局：孤独茶人"
+      },
+      palaceInvitation: {
+        text: "你接受了皇宫的邀请，进宫献茶。皇帝对你的茶赞不绝口，决定将你的茶列为贡品。这是茶坊发展的绝佳机会...",
+        choices: [
+          { text: "借助皇家势力，扩大生意", nextScene: "ending1" },
+          { text: "保持初心，不与权贵勾结", nextScene: "ending2" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '荣幸';
+          gameData.playerState.reputation += 50;
+          updateMood();
+        }
+      },
+      expandMarket: {
+        text: "你将新茶推广到全国各地，茶坊的生意越来越好。你成为了全国知名的茶商，财富和声誉双丰收...",
+        choices: [
+          { text: "继续创新，引领茶文化潮流", nextScene: "ending1" },
+          { text: "安于现状，享受财富", nextScene: "ending2" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '满足';
+          gameData.playerState.wealth += 100;
+          updateMood();
+        }
+      },
+      cooperateWithGu: {
+        text: "你与顾千帆合作，调查欧阳旭的罪行。在你们的努力下，欧阳旭的恶行被揭露，受到了应有的惩罚。你也因此结识了许多志同道合的朋友...",
+        choices: [
+          { text: "继续与顾千帆合作，帮助朝廷", nextScene: "ending4" },
+          { text: "回到汴京，继续经营茶坊", nextScene: "ending2" }
+        ],
+        onEnter: () => {
+          gameData.playerState.mood = '畅快';
+          gameData.playerState.relationships.guQianfan += 30;
+          updateMood();
+        }
+      },
+      decline: {
+        text: "你继续消沉下去，茶坊的生意越来越差。最终，茶坊倒闭，你也失去了所有的财产和朋友...",
+        isEnding: true,
+        title: "结局：落魄收场"
+      }
+    };
+
+    // 更新游戏场景
+    function updateScene(sceneKey) {
+      const scene = scenes[sceneKey];
+      if (!scene) {
+        console.error('场景不存在:', sceneKey);
+        return;
+      }
+      
+      // 更新场景文本
+      document.getElementById('story-text').textContent = scene.text;
+      
+      // 更新章节名称
+      document.getElementById('chapter').textContent = scene.title || sceneKey;
+      
+      // 执行场景进入时的逻辑
+      if (typeof scene.onEnter === 'function') {
+        scene.onEnter();
+      }
+      
+      // 清空选项容器
+      const choicesContainer = document.getElementById('choices-container');
+      choicesContainer.innerHTML = '';
+      
+      // 如果是结局场景，显示结局弹窗
+      if (scene.isEnding) {
+        document.getElementById('ending-title').textContent = scene.title;
+        document.getElementById('ending-content').textContent = scene.text;
+        document.getElementById('ending-modal').classList.remove('hidden');
+        return;
+      }
+      
+      // 生成选项按钮
+      if (scene.choices && scene.choices.length > 0) {
+        scene.choices.forEach(choice => {
+          const button = document.createElement('button');
+          button.className = 'choice-btn w-full bg-primary/30 hover:bg-primary/60 text-light py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center text-[clamp(0.9rem,1.5vw,1rem)]';
+          button.innerHTML = `<i class="fa fa-hand-o-right mr-2"></i> ${choice.text}`;
+          
+          // 为按钮添加点击事件
+          button.addEventListener('click', () => {
+            gameData.currentScene = choice.nextScene;
+            updateScene(choice.nextScene);
+          });
+          
+          choicesContainer.appendChild(button);
+        });
+      }
+    }
+
+    // 更新心境显示
+    function updateMood() {
+      document.getElementById('mood').textContent = gameData.playerState.mood;
+    }
+
+    // 保存游戏
+    function saveGame() {
+      const saveName = `存档 ${new Date().toLocaleString()}`;
+      const saveData = {
+        name: saveName,
+        timestamp: Date.now(),
+        gameData: JSON.parse(JSON.stringify(gameData))
+      };
+      
+      // 将存档添加到存档列表
+      gameData.saveSlots.push(saveData);
+      
+      // 保存到本地存储
+      localStorage.setItem('dreamOfFloweringSaveData', JSON.stringify(gameData.saveSlots));
+      
+      // 显示保存成功提示
+      alert('游戏已保存');
+    }
+
+    // 加载存档列表
+    function loadSaveList() {
+      const saveList = document.getElementById('save-items');
+      saveList.innerHTML = '';
+      
+      if (gameData.saveSlots.length === 0) {
+        saveList.innerHTML = '<div class="text-center text-gray-400">暂无存档</div>';
+        return;
+      }
+      
+      // 按时间排序，最新的在前面
+      gameData.saveSlots.sort((a, b) => b.timestamp - a.timestamp);
+      
+      gameData.saveSlots.forEach((save, index) => {
+        const saveItem = document.createElement('div');
+        saveItem.className = 'bg-dark/50 hover:bg-primary/20 p-2 rounded cursor-pointer transition-all duration-200 flex justify-between items-center';
+        saveItem.innerHTML = `
+          <div class="truncate">${save.name}</div>
+          <div class="text-xs text-gray-400">${new Date(save.timestamp).toLocaleString()}</div>
+        `;
+        
+        saveItem.addEventListener('click', () => {
+          // 加载存档
+          gameData.currentScene = save.gameData.currentScene;
+          gameData.playerState = save.gameData.playerState;
+          
+          // 更新场景
+          updateScene(gameData.currentScene);
+          
+          // 隐藏存档列表
+          toggleSaveList();
+        });
+        
+        saveList.appendChild(saveItem);
+      });
+    }
+
+    // 切换存档列表显示状态
+    function toggleSaveList() {
+      const saveList = document.getElementById('save-list');
+      saveList.classList.toggle('hidden');
+      
+      if (!saveList.classList.contains('hidden')) {
+        // 加载并显示存档列表
+        loadSaveList();
+      }
+    }
+
+    // 重新开始游戏
+    function restartGame() {
+      // 重置游戏数据
+      gameData.currentScene = 'start';
+      gameData.playerState = {
+        mood: '平静',
+        reputation: 0,
+        wealth: 0,
+        relationships: {
+          ouyangXu: 0,
+          guQianfan: 0,
+          sunSanniang: 0
+        }
+      };
+      
+      // 更新场景
+      updateScene('start');
+      
+      // 隐藏结局弹窗
+      document.getElementById('ending-modal').classList.add('hidden');
+    }
+
+    // 从本地存储加载存档
+    function loadSavedGames() {
+      const savedGames = localStorage.getItem('dreamOfFloweringSaveData');
+      if (savedGames) {
+        try {
+          gameData.saveSlots = JSON.parse(savedGames);
+        } catch (e) {
+          console.error('加载存档失败:', e);
+          gameData.saveSlots = [];
+        }
+      }
+    }
+
+    // 初始化游戏
+    function initGame() {
+      // 加载已保存的游戏
+      loadSavedGames();
+      
+      // 初始化场景
+      updateScene(gameData.currentScene);
+      
+      // 添加按钮事件监听
+      document.getElementById('save-btn').addEventListener('click', saveGame);
+      document.getElementById('load-btn').addEventListener('click', toggleSaveList);
+      document.getElementById('restart-btn').addEventListener('click', restartGame);
+      document.getElementById('restart-from-ending').addEventListener('click', restartGame);
+    }
+
+    // 当页面加载完成后初始化游戏
+    document.addEventListener('DOMContentLoaded', initGame);
+  </script>
+</body>
+</html>
+  
