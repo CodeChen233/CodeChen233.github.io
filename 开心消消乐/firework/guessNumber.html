@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>猜数字得彩蛋</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <div class="mm">
+      请输入一个正确数字获得彩蛋：<input class="border" type="number" id="input" value="" />
+      <div>
+        <button onclick='button("********")' class="resize-to resize-to-1">
+          猜一下
+        </button>
+      </div>
+    </div>
+    <div id="myHtml" style="text-align: center;"></div>
+  </body>
+  <script type="text/javascript">
+    let randomNumber = [47]; // 科比和詹姆斯的球衣号码相加
+    let index = 0; //校验次数
+    let length = 0; //值得位数
+    let inputVal = ""; //输入的值
+    let countNum = 0; //校验次数
+    let indexHtml = ""; //页面的值
+    let titleVal = "";
+    let shouNum = "未选择";
+
+    function button() {
+      let val = $("#input").val();
+      if (!val || val.length == 0) {
+        alert("呆瓜你还没猜呢");
+        return;
+      }
+      if (Number(val) == Number(randomNumber.join(""))) {
+        indexHtml = "恭喜呆瓜赢了，彩蛋来咯,倒数321";
+        $("#myHtml").html(indexHtml);
+        setTimeout(() => {
+            $("#myHtml").html("");
+            window.open("./index.html","_self");
+        }, 3000);
+      } else {
+        setTimeout(() => {
+            alert("呆瓜不对,再猜");
+          }, 100);
+      }
+      // $("#input").val("");
+    }
+  </script>
+  <style>
+    .mm{
+      text-align: center;
+      margin-top: 25vh;
+      font-family: '幼圆'
+    }
+    .titleTop {
+      padding-top: constant(safe-area-inset-top);
+      padding-top: env(safe-area-inset-top);
+    }
+    #countnumber {
+      margin-left: 24px;
+    }
+    .red {
+      color: brown;
+      margin-top: 8px;
+    }
+    .resize {
+      margin-top: 8px;
+      background-color: #99d5ff;
+      width: 100%;
+      height: 32px;
+      border-radius: 4px;
+      padding: 0 24px;
+      box-sizing: border-box;
+      border: 1px solid #99d5ff;
+    }
+    .border {
+      border: 1px solid #dddfe0;
+      margin-top: 8px;
+    }
+    .resize-to {
+      margin-top: 8px;
+      background-color: #dddfe0;
+      width: 25%;
+      height: 32px;
+      text-align: center;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-family: '幼圆'
+    }
+    .resize-to-1 {
+      border: 1px solid #99d5ff;
+      background-color: #dddfe0;
+    }
+    .resize-to-2 {
+      border: 1px solid #99d5ff;
+      background-color: #dddfe0;
+    }
+    #input {
+      height: 32px;
+      border-radius: 6px;
+    }
+  </style>
+</html>
