@@ -84,7 +84,8 @@ var match = function match() {
 var last = function match() {
   var match = document.querySelectorAll('.match');
   if(match.length == cardsArray.length * 2){
-      window.open("./firework/guessNumber.html");
+      // window.open("./firework/guessNumber.html");
+      window.location.href = "./firework/guessNumber.html";
   }
 };
 
