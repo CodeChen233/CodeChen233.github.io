@@ -5,7 +5,8 @@ const DataStorage = (function() {
   // 私有数据 - 外部无法直接访问
   const list = [
     { name: "梦华录文字游戏", description: "一个普通的文字游戏而已" },
-    { name: "开心消消乐", description: "一个有彩蛋的消消乐游戏而已" }
+    { name: "开心消消乐", description: "一个有彩蛋的消消乐游戏而已" },
+    { name: "萌萌写真集", description: "这是一套绝美的写真" }
   ];
 
   // 公共方法 - 返回数据副本，保护原始数据
