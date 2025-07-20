@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萌萌写真集</title>
+    <script src="../static/js/tailwindcss.js"></script>
+    <link href="../static/css/awesome.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#818CF8',
+                        dark: '#1F2937',
+                        light: '#F9FAFB'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .tab-active {
+                @apply bg-primary text-white border-primary;
+            }
+            .photo-card {
+                @apply overflow-hidden rounded-xl shadow-md transition-all duration-300 hover:shadow-xl;
+            }
+            .photo-card img {
+                @apply w-full h-full object-cover transition-transform duration-500 hover:scale-110;
+            }
+            .photo-grid {
+                @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6;
+            }
+            .modal {
+                @apply fixed inset-0 bg-black/90 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300;
+            }
+            .modal.active {
+                @apply opacity-100 pointer-events-auto;
+            }
+            .modal-content {
+                @apply max-w-6xl w-full max-h-[90vh] flex items-center justify-center relative;
+            }
+            .modal-image {
+                @apply max-w-full max-h-[80vh] object-contain;
+            }
+            .modal-btn {
+                @apply absolute text-white bg-black/50 w-12 h-12 rounded-full flex items-center justify-center hover:bg-primary transition-colors;
+            }
+            /* 添加背景图样式 */
+            body {
+                background-image: url('./images/background.jpg');
+                background-size: cover; /* 使背景图覆盖整个页面 */
+                background-position: center; /* 背景图居中显示 */
+                background-attachment: fixed; /* 背景图固定，不随页面滚动 */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter text-dark">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-camera-retro text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-dark">萌萌写真集</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- 相册标题 -->
+        <section class="mb-8 text-center">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-2">萌啊萌的写真集</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">祝萌萌天天开心，平安喜乐，事业一帆风顺。</p>
+        </section>
+
+        <!-- 分类标签 -->
+        <section class="mb-10">
+            <div class="flex flex-wrap justify-center gap-3">
+                <button class="tab-btn tab-active px-5 py-2 rounded-full border-2 transition-all duration-300" data-category="all">
+                    全部
+                </button>
+                <button class="tab-btn px-5 py-2 rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition-all duration-300" data-category="pink">
+                    粉色毛衣
+                </button>
+                <button class="tab-btn px-5 py-2 rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition-all duration-300" data-category="other">
+                    民国/礼服
+                </button>
+                <!-- <button class="tab-btn px-5 py-2 rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition-all duration-300" data-category="food">
+                    美食分享
+                </button>
+                <button class="tab-btn px-5 py-2 rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition-all duration-300" data-category="city">
+                    城市建筑
+                </button> -->
+            </div>
+        </section>
+
+        <!-- 照片展示区域 -->
+        <section class="mb-12">
+            <div id="photo-container" class="photo-grid">
+                <!-- 照片将通过JavaScript动态加载 -->
+            </div>
+        </section>
+
+        <!-- 加载更多 -->
+        <section class="text-center mb-12">
+            <button id="load-more" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-full shadow-md transition-all duration-300 flex items-center mx-auto">
+                <i class="fa fa-refresh mr-2"></i> 加载更多
+            </button>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-10">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fa fa-camera-retro text-primary text-2xl"></i>
+                        <h2 class="text-xl font-bold">萌啊萌的写真集</h2>
+                    </div>
+                    <p class="text-gray-400 mb-4">记录最美的萌啊萌</p>
+                </div> 
+            </div>
+        </div>
+    </footer>
+
+    <!-- 图片查看模态框 -->
+    <div id="image-modal" class="modal">
+        <div class="modal-content">
+            <button id="prev-image" class="modal-btn left-4">
+                <i class="fa fa-angle-left text-2xl"></i>
+            </button>
+            <img id="modal-image" class="modal-image" src="" alt="大图查看">
+            <button id="next-image" class="modal-btn right-4">
+                <i class="fa fa-angle-right text-2xl"></i>
+            </button>
+            <button id="close-modal" class="modal-btn top-4 right-4">
+                <i class="fa fa-times"></i>
+            </button>
+            <div class="absolute bottom-4 left-0 right-0 text-center">
+                <h3 id="modal-title" class="text-white font-bold text-xl"></h3>
+                <p id="modal-category" class="text-white/80"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 使用示例图片URL，实际使用时替换为本地图片路径
+        function getImageUrl(category, index) {
+            // 返回示例图片URL，确保图片存在
+            return `./images/${category}/${index}.jpg`;
+        }
+
+        // 相册数据
+        const photoAlbum = {
+            pink: Array.from({ length: 23 }, (_, i) => ({
+                src: getImageUrl('pink', i + 10001),
+                alt: `${i + 1}`,
+                title: ` ${i + 1}`
+            })),
+            other: Array.from({ length: 37 }, (_, i) => ({
+                src: getImageUrl('other', i + 20001),
+                alt: `${i + 1}`,
+                title: ` ${i + 1}`
+            }))
+            // food: Array.from({ length: 12 }, (_, i) => ({
+            //     src: getImageUrl('food', i + 1),
+            //     alt: `美食分享${i + 1}`,
+            //     title: `美食分享 ${i + 1}`
+            // })),
+            // city: Array.from({ length: 12 }, (_, i) => ({
+            //     src: getImageUrl('city', i + 1),
+            //     alt: `城市建筑${i + 1}`,
+            //     title: `城市建筑 ${i + 1}`
+            // }))
+        };
+
+        // 将所有照片合并到一个数组中
+        const allPhotos = [];
+        for (const category in photoAlbum) {
+            photoAlbum[category].forEach(photo => {
+                allPhotos.push({...photo, category });
+            });
+        }
+
+        // 当前显示的照片和当前选中的照片索引
+        let currentPhotos = [...allPhotos];
+        let currentPage = 1;
+        const photosPerPage = 12;
+        let currentPhotoIndex = 0;
+
+        // DOM 元素
+        const photoContainer = document.getElementById('photo-container');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const loadMoreBtn = document.getElementById('load-more');
+        const modal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+        const modalTitle = document.getElementById('modal-title');
+        const modalCategory = document.getElementById('modal-category');
+        const closeModalBtn = document.getElementById('close-modal');
+        const prevImageBtn = document.getElementById('prev-image');
+        const nextImageBtn = document.getElementById('next-image');
+
+        // 渲染照片
+        function renderPhotos(photos, page = 1) {
+            const startIndex = (page - 1) * photosPerPage;
+            const endIndex = startIndex + photosPerPage;
+            const photosToRender = photos.slice(startIndex, endIndex);
+            
+            // 清空容器
+            if (page === 1) {
+                photoContainer.innerHTML = '';
+            }
+            
+            // 添加照片卡片
+            photosToRender.forEach(photo => {
+                const card = document.createElement('div');
+                card.className = 'photo-card group cursor-pointer';
+                card.dataset.category = photo.category;
+                card.dataset.index = allPhotos.indexOf(photo);
+                
+                card.innerHTML = `
+                    <div class="relative aspect-square overflow-hidden">
+                        <img src="${photo.src}" alt="${photo.alt}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                            <h3 class="text-white font-bold text-lg">${photo.title}</h3>
+                            <p class="text-white/80 text-sm">${photo.category}</p>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加点击事件
+                card.addEventListener('click', () => {
+                    openModal(photo);
+                });
+                
+                photoContainer.appendChild(card);
+            });
+            
+            // 隐藏或显示加载更多按钮
+            if (endIndex >= photos.length) {
+                loadMoreBtn.style.display = 'none';
+            } else {
+                loadMoreBtn.style.display = 'flex';
+            }
+        }
+
+        // 打开模态框
+        function openModal(photo) {
+            currentPhotoIndex = allPhotos.indexOf(photo);
+            modalImage.src = photo.src;
+            modalImage.alt = photo.alt;
+            modalTitle.textContent = photo.title;
+            modalCategory.textContent = photo.category;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = ''; // 恢复背景滚动
+        }
+
+        // 显示上一张图片
+        function showPrevImage() {
+            currentPhotoIndex = (currentPhotoIndex - 1 + allPhotos.length) % allPhotos.length;
+            const photo = allPhotos[currentPhotoIndex];
+            modalImage.src = photo.src;
+            modalImage.alt = photo.alt;
+            modalTitle.textContent = photo.title;
+            modalCategory.textContent = photo.category;
+        }
+
+        // 显示下一张图片
+        function showNextImage() {
+            currentPhotoIndex = (currentPhotoIndex + 1) % allPhotos.length;
+            const photo = allPhotos[currentPhotoIndex];
+            modalImage.src = photo.src;
+            modalImage.alt = photo.alt;
+            modalTitle.textContent = photo.title;
+            modalCategory.textContent = photo.category;
+        }
+
+        // 初始化页面
+        function init() {
+            renderPhotos(currentPhotos);
+            
+            // 标签切换事件
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // 更新按钮样式
+                    tabButtons.forEach(btn => btn.classList.remove('tab-active'));
+                    button.classList.add('tab-active');
+                    
+                    // 更新照片
+                    const category = button.dataset.category;
+                    currentPage = 1;
+                    
+                    if (category === 'all') {
+                        currentPhotos = [...allPhotos];
+                    } else {
+                        currentPhotos = allPhotos.filter(photo => photo.category === category);
+                    }
+                    
+                    renderPhotos(currentPhotos);
+                });
+            });
+            
+            // 加载更多按钮事件
+            loadMoreBtn.addEventListener('click', () => {
+                currentPage++;
+                renderPhotos(currentPhotos, currentPage);
+            });
+            
+            // 导航栏滚动效果
+            window.addEventListener('scroll', () => {
+                const header = document.querySelector('header');
+                if (window.scrollY > 100) {
+                    header.classList.add('py-2', 'shadow-md');
+                    header.classList.remove('py-4');
+                } else {
+                    header.classList.add('py-4');
+                    header.classList.remove('py-2', 'shadow-md');
+                }
+            });
+            
+            // 模态框事件
+            closeModalBtn.addEventListener('click', closeModal);
+            prevImageBtn.addEventListener('click', showPrevImage);
+            nextImageBtn.addEventListener('click', showNextImage);
+            
+            // 点击模态框背景关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // 键盘导航
+            document.addEventListener('keydown', (e) => {
+                if (!modal.classList.contains('active')) return;
+                
+                if (e.key === 'Escape') closeModal();
+                if (e.key === 'ArrowLeft') showPrevImage();
+                if (e.key === 'ArrowRight') showNextImage();
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>    
